@@ -1,18 +1,21 @@
-# Use official Node.js image
-FROM node:18
+# Use the official .NET 8.0 SDK image to build the app
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+WORKDIR /src
 
-# Set working directory
-WORKDIR /app
+# Copy csproj and restore as distinct layers
+COPY Opal-tool.csproj ./
+RUN dotnet restore Opal-tool.csproj
 
-# Copy package files and install dependencies
-COPY package*.json ./
-RUN npm install --production
-
-# Copy the rest of your app
+# Copy the rest of the source code
 COPY . .
 
-# Expose the port your app runs on
-EXPOSE 3000
+# Build the application
+RUN dotnet publish Opal-tool.csproj -c Release -o /app/publish --no-restore
 
-# Start the app
-CMD ["npm", "start"]
+# Use the official .NET 8.0 runtime image for the final stage
+FROM mcr.microsoft.com/dotnet/runtime:8.0 AS final
+WORKDIR /app
+COPY --from=build /app/publish .
+
+# Set the entry point
+ENTRYPOINT ["dotnet", "Opal-tool.dll"]
