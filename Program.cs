@@ -10,20 +10,22 @@ var app = builder.Build();
 // Health check or discovery endpoint
 app.MapGet("/", () => Results.Ok(new { status = "Opal Page Structure Analyzer is running." }));
 
-// Discovery endpoint for Opal (all fields in camelCase)
-app.MapGet("/discovery", () => Results.Ok(new[]
-{
-    new {
-        name = "analyze",
-        method = "POST",
-        path = "/analyze",
-        description = "Analyzes a web page's structure. Expects JSON: { url: string }.",
-        request = new { url = "string (required)" },
-        response = new {
-            wordCount = "int",
-            headerCount = "int",
-            paragraphCount = "int",
-            averageWordsPerParagraph = "double"
+// Discovery endpoint for Opal (object with 'functions' property)
+app.MapGet("/discovery", () => Results.Ok(new {
+    functions = new[]
+    {
+        new {
+            name = "analyze",
+            method = "POST",
+            path = "/analyze",
+            description = "Analyzes a web page's structure. Expects JSON: { url: string }.",
+            request = new { url = "string (required)" },
+            response = new {
+                wordCount = "int",
+                headerCount = "int",
+                paragraphCount = "int",
+                averageWordsPerParagraph = "double"
+            }
         }
     }
 }));
