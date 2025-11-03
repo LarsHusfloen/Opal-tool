@@ -7,30 +7,41 @@ using System.Threading.Tasks;
 var builder = WebApplication.CreateBuilder(args);
 var app = builder.Build();
 
-// Health check or discovery endpoint
-app.MapGet("/", () => Results.Ok(new { status = "Opal Page Structure Analyzer is running." }));
+// Health check endpoint
+app.MapGet("/", () => Results.Ok(new { status = "Opal Page Structure Analyzer is running." }))
 
-// Discovery endpoint for Opal (object with 'functions' property)
-app.MapGet("/discovery", () => Results.Ok(new {
+// Discovery endpoint for Opal (recommended manifest structure)
+.MapGet("/discovery", () => Results.Ok(new {
+    name = "Opal Page Structure Analyzer",
+    description = "Analyzes the structure of a web page (word count, headers, paragraphs, etc).",
     functions = new[]
     {
         new {
             name = "analyze",
+            description = "Analyzes a web page's structure.",
             method = "POST",
             path = "/analyze",
-            description = "Analyzes a web page's structure. Expects JSON: { url: string }.",
-            request = new { url = "string (required)" },
-            response = new {
-                wordCount = "int",
-                headerCount = "int",
-                paragraphCount = "int",
-                averageWordsPerParagraph = "double"
+            parameters = new[]
+            {
+                new {
+                    name = "url",
+                    type = "string",
+                    description = "The URL of the page to analyze.",
+                    required = true
+                }
+            },
+            response = new[]
+            {
+                new { name = "wordCount", type = "int", description = "Total word count" },
+                new { name = "headerCount", type = "int", description = "Number of headers" },
+                new { name = "paragraphCount", type = "int", description = "Number of paragraphs" },
+                new { name = "averageWordsPerParagraph", type = "double", description = "Average words per paragraph" }
             }
         }
     }
-}));
+}))
 
-app.MapPost("/analyze", async (HttpContext context) =>
+.MapPost("/analyze", async (HttpContext context) =>
 {
     try
     {
