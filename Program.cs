@@ -7,6 +7,27 @@ using System.Threading.Tasks;
 var builder = WebApplication.CreateBuilder(args);
 var app = builder.Build();
 
+// Health check or discovery endpoint
+app.MapGet("/", () => Results.Ok(new { status = "Opal Page Structure Analyzer is running." }));
+
+// Discovery endpoint for Opal
+app.MapGet("/discovery", () => Results.Ok(new[]
+{
+    new {
+        name = "analyze",
+        method = "POST",
+        path = "/analyze",
+        description = "Analyzes a web page's structure. Expects JSON: { Url: string }.",
+        request = new { Url = "string (required)" },
+        response = new {
+            WordCount = "int",
+            HeaderCount = "int",
+            ParagraphCount = "int",
+            AverageWordsPerParagraph = "double"
+        }
+    }
+}));
+
 app.MapPost("/analyze", async (HttpContext context) =>
 {
     try
