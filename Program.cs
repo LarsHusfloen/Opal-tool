@@ -8,10 +8,10 @@ var builder = WebApplication.CreateBuilder(args);
 var app = builder.Build();
 
 // Health check endpoint
-app.MapGet("/", () => Results.Ok(new { status = "Opal Page Structure Analyzer is running." }))
+app.MapGet("/", () => Results.Ok(new { status = "Opal Page Structure Analyzer is running." }));
 
 // Discovery endpoint for Opal (recommended manifest structure)
-.MapGet("/discovery", () => Results.Ok(new {
+app.MapGet("/discovery", () => Results.Ok(new {
     name = "Opal Page Structure Analyzer",
     description = "Analyzes the structure of a web page (word count, headers, paragraphs, etc).",
     functions = new[]
@@ -39,9 +39,9 @@ app.MapGet("/", () => Results.Ok(new { status = "Opal Page Structure Analyzer is
             }
         }
     }
-}))
+}));
 
-.MapPost("/analyze", async (HttpContext context) =>
+app.MapPost("/analyze", async (HttpContext context) =>
 {
     try
     {
