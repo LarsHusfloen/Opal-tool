@@ -12,8 +12,8 @@ COPY . .
 # Build the application
 RUN dotnet publish Opal-tool.csproj -c Release -o /app/publish --no-restore
 
-# Use the official .NET 8.0 runtime image for the final stage
-FROM mcr.microsoft.com/dotnet/runtime:8.0 AS final
+# Use the official .NET 8.0 ASP.NET runtime image for the final stage
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
 WORKDIR /app
 COPY --from=build /app/publish .
 
