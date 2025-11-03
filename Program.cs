@@ -1,16 +1,40 @@
-using System;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Hosting;
+using System.Net.Http;
+using System.Threading.Tasks;
 
-class Program
+var builder = WebApplication.CreateBuilder(args);
+var app = builder.Build();
+
+app.MapPost("/analyze", async (HttpContext context) =>
 {
-    static void Main(string[] args)
+    try
     {
-        // Register the tool
-        OpalToolRegistry.Register(new PageStructureTool());
+        var form = await context.Request.ReadFromJsonAsync<AnalyzeRequest>();
+        if (form == null || string.IsNullOrWhiteSpace(form.Url))
+            return Results.BadRequest(new { error = "Missing or invalid URL." });
 
-        // Example usage: run the tool on sample HTML
+        using var httpClient = new HttpClient();
+        var html = await httpClient.GetStringAsync(form.Url);
+
         var tool = new PageStructureTool();
-        string html = "<h1>Title</h1><p>This is a test paragraph.</p>";
         var result = tool.Run(html);
-        Console.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(result, Newtonsoft.Json.Formatting.Indented));
+        return Results.Ok(result);
     }
+    catch (HttpRequestException ex)
+    {
+        return Results.BadRequest(new { error = $"Failed to fetch URL: {ex.Message}" });
+    }
+    catch (System.Exception ex)
+    {
+        return Results.Problem(ex.Message);
+    }
+});
+
+app.Run();
+
+public class AnalyzeRequest
+{
+    public string Url { get; set; }
 }
